@@ -11,110 +11,109 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up KinD cluster
         uses: helm/kind-action@v1.9.0
         with:
           cluster_name: kind
-      
+
       - name: Verify cluster is running
         run: |
+          set -euo pipefail
           kubectl cluster-info
-          kubectl get nodes
-      
+          kubectl get nodes -o wide
+
       - name: Set up Helm
         uses: azure/setup-helm@v4
         with:
           version: 'latest'
-      
-      - name: Create namespace
-        run: |
-          kubectl create namespace bot --dry-run=client -o yaml | kubectl apply -f -
-      
+
       - name: Helm lint chart
         run: |
+          set -euo pipefail
           helm lint ./helm/bot-platform
-      
-      - name: Helm install chart
+
+      - name: Helm install/upgrade chart
         run: |
+          set -euo pipefail
           helm upgrade --install bot-platform ./helm/bot-platform \
-            -n bot \
-            --wait \
-            --timeout 5m \
+            -n bot --create-namespace \
+            --wait --timeout 5m \
             --debug
-      
+
       - name: Check deployment status
         run: |
+          set -euo pipefail
           echo "=== Deployments ==="
           kubectl get deployments -n bot
           echo "=== Pods ==="
-          kubectl get pods -n bot
+          kubectl get pods -n bot -o wide
           echo "=== Services ==="
           kubectl get svc -n bot
-      
-      - name: Wait for deployments
+
+      - name: Wait for deployments (api/worker/nlp)
         run: |
-          # Esperar cada deployment individualmente y mostrar estado
+          set -euo pipefail
           for deploy in api worker nlp; do
             echo "Waiting for bot-platform-${deploy}..."
-            kubectl wait --for=condition=available \
-              --timeout=180s \
-              deployment/bot-platform-${deploy} \
-              -n bot || {
-                echo "Failed to deploy ${deploy}, checking logs..."
-                kubectl describe deployment bot-platform-${deploy} -n bot
-                kubectl logs -n bot -l app=bot-platform-${deploy} --tail=50
-              }
+            if ! kubectl wait --for=condition=available --timeout=180s \
+              deployment/bot-platform-${deploy} -n bot; then
+              echo "Failed to deploy ${deploy}, describing resources..."
+              kubectl describe deployment bot-platform-${deploy} -n bot || true
+              kubectl get pods -n bot -l app=bot-platform-${deploy} -o wide || true
+              kubectl logs -n bot -l app=bot-platform-${deploy} --tail=200 || true
+              exit 1
+            fi
           done
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      
+
       - name: Install Ansible
         run: |
+          set -euo pipefail
           python -m pip install --upgrade pip
           pip install ansible kubernetes
           ansible-galaxy collection install kubernetes.core
-      
+
       - name: Test Ansible playbook (dry-run)
+        env:
+          K8S_AUTH_KUBECONFIG: ${{ env.HOME }}/.kube/config
         run: |
-          # Ansible usa el kubeconfig default que ya está configurado
-          ansible-playbook ansible/playbooks/restart-platform.yml \
-            -e namespace=bot \
-            -e kubeconfig=~/.kube/config \
-            --check \
-            -vv
-      
+          set -euo pipefail
+          ansible-playbook -i ansible/inventory/hosts.ini \
+            ansible/playbooks/restart-platform.yml \
+            -e ns=bot \
+            --check -vv
+
       - name: Run smoke tests
         run: |
-          # Hacer el script ejecutable si no lo es
+          set -euo pipefail
           chmod +x ./scripts/smoke.sh || true
-          # Ejecutar smoke test solo si existe
           if [ -f "./scripts/smoke.sh" ]; then
             ./scripts/smoke.sh
           else
-            echo "Smoke test script not found, skipping..."
-            # Test básico de conectividad
+            echo "Smoke script not found, basic curl test..."
+            # El servicio API escucha en 80 y responde en "/"
             kubectl run test-curl --image=curlimages/curl:latest \
               --rm -i --restart=Never \
               -n bot \
-              -- curl -s http://bot-platform-api:8080/health || true
+              -- curl -sS http://bot-platform-api
           fi
-      
+
       - name: Debug on failure
         if: failure()
         run: |
-          echo "=== Describing failed pods ==="
-          kubectl get pods -n bot --no-headers | grep -v Running | while read pod _; do
-            echo "Pod: $pod"
-            kubectl describe pod $pod -n bot
-            echo "---"
-            kubectl logs $pod -n bot --tail=100 || true
-            echo "=========="
+          echo "=== Describing non-running pods ==="
+          kubectl get pods -n bot --no-headers | awk '$3!="Running"{print $1}' | while read -r pod; do
+            echo ">>> $pod"
+            kubectl describe pod "$pod" -n bot || true
+            kubectl logs "$pod" -n bot --tail=200 || true
+            echo "----------"
           done
