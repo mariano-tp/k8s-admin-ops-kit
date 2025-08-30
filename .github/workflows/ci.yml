@@ -20,10 +20,7 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v4
 
-      - name: Install metrics-server
-        run: |
-          kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-          kubectl -n kube-system rollout status deploy/metrics-server --timeout=180s
+      # (Quitado) metrics-server: no es necesario si HPA está desactivado
 
       - name: Helm lint + install chart
         run: |
@@ -37,6 +34,7 @@ jobs:
           python-version: "3.11"
 
       - run: |
+        # deps para ansible y colección k8s
           python -m pip install -U pip
           pip install -r requirements.txt
           ansible-galaxy collection install -r ansible/collections/requirements.yml
