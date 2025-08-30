@@ -1,0 +1,4 @@
+ansible>=9
+ansible-lint>=24
+kubernetes>=28
+openshift>=0.13.2

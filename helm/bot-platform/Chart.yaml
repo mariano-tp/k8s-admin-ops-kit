@@ -1,0 +1,6 @@
+apiVersion: v2
+name: bot-platform
+description: Minimal platform chart (api/worker/nlp) for admin ops demos
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

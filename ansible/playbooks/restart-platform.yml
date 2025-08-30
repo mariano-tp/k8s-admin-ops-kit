@@ -1,0 +1,46 @@
+---
+- name: Restart bot platform in order
+  hosts: localhost
+  gather_facts: false
+  vars:
+    namespace: "{{ namespace | default('bot') }}"
+    order: [api, worker, nlp]
+  tasks:
+    - name: Ensure namespace exists
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Namespace
+        name: "{{ namespace }}"
+
+    - name: Rollout restart each component sequentially
+      vars:
+        deploy_name: "bot-platform-{{ item }}"
+      loop: "{{ order }}"
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: "{{ deploy_name }}"
+            namespace: "{{ namespace }}"
+          spec:
+            template:
+              metadata:
+                annotations:
+                  kubernetes.io/change-cause: "ansible-restart {{ ansible_date_time.iso8601 }}"
+                  kubectl.kubernetes.io/restartedAt: "{{ ansible_date_time.iso8601 }}"
+
+    - name: Wait Ready after each restart
+      vars:
+        deploy_name: "bot-platform-{{ item }}"
+      loop: "{{ order }}"
+      retries: 60
+      delay: 5
+      until: "(result.resources[0].status.availableReplicas | default(0)) >= (result.resources[0].spec.replicas | default(1))"
+      kubernetes.core.k8s_info:
+        api_version: apps/v1
+        kind: Deployment
+        name: "{{ deploy_name }}"
+        namespace: "{{ namespace }}"
+      register: result

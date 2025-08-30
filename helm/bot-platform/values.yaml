@@ -1,0 +1,26 @@
+namespace: bot
+
+image:
+  api: nginxdemos/hello
+  worker: nginxinc/nginx-unprivileged:1.25-alpine
+  nlp: nginxinc/nginx-unprivileged:1.25-alpine
+
+replicaCount:
+  api: 1
+  worker: 1
+  nlp: 1
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+hpa:
+  enabled: false
+
+service:
+  type: ClusterIP
+  port: 80

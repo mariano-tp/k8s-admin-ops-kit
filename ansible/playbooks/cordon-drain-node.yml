@@ -1,0 +1,23 @@
+---
+- name: Cordon & drain node
+  hosts: localhost
+  gather_facts: false
+  vars:
+    node: "{{ node | default('') }}"
+    timeout: "{{ timeout | default(600) }}"
+  tasks:
+    - name: Fail if node not provided
+      ansible.builtin.fail:
+        msg: "Provide -e node=<node-name>"
+      when: node == ''
+    - name: Cordon node
+      kubernetes.core.k8s_drain:
+        name: "{{ node }}"
+        state: cordon
+    - name: Drain node safely
+      kubernetes.core.k8s_drain:
+        name: "{{ node }}"
+        state: drain
+        ignore_daemonsets: true
+        delete_emptydir_data: false
+        timeout: "{{ timeout }}"

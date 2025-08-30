@@ -1,0 +1,11 @@
+---
+- name: Rollout undo for a Deployment
+  hosts: localhost
+  gather_facts: false
+  vars:
+    namespace: "{{ namespace | default('bot') }}"
+    name: "{{ name | default('bot-platform-api') }}"
+  tasks:
+    - name: Rollback deployment to previous revision
+      ansible.builtin.command:
+        cmd: "kubectl rollout undo deployment/{{ name }} -n {{ namespace }}"

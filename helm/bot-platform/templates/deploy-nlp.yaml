@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bot-platform-nlp
+  labels:
+    {- include "bot-platform.labels" . | nindent 4 }
+spec:
+  replicas: { .Values.replicaCount.nlp }
+  selector:
+    matchLabels:
+      app: bot-platform-nlp
+  template:
+    metadata:
+      labels:
+        app: bot-platform-nlp
+        {- include "bot-platform.labels" . | nindent 8 }
+    spec:
+      containers:
+        - name: nlp
+          image: { .Values.image.nlp }
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet: { "{" } path: /, port: 80 { "}" }
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { "{" } path: /, port: 80 { "}" }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            {- toYaml .Values.resources | nindent 12 }
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: bot-platform-nlp-pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: bot-platform-nlp
