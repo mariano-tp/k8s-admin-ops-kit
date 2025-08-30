@@ -3,9 +3,11 @@ kind: Deployment
 metadata:
   name: bot-platform-api
   labels:
-    {- include "bot-platform.labels" . | nindent 4 }
+    app.kubernetes.io/name: {{ include "bot-platform.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  replicas: { .Values.replicaCount.api }
+  replicas: {{ .Values.replicaCount.api }}
   selector:
     matchLabels:
       app: bot-platform-api
@@ -13,23 +15,29 @@ spec:
     metadata:
       labels:
         app: bot-platform-api
-        {- include "bot-platform.labels" . | nindent 8 }
+        app.kubernetes.io/name: {{ include "bot-platform.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
     spec:
       containers:
         - name: api
-          image: { .Values.image.api }
+          image: {{ .Values.image.api }}
           ports:
             - containerPort: 80
           readinessProbe:
-            httpGet: { "{" } path: /, port: 80 { "}" }
+            httpGet:
+              path: /
+              port: 80
             initialDelaySeconds: 2
             periodSeconds: 5
           livenessProbe:
-            httpGet: { "{" } path: /, port: 80 { "}" }
+            httpGet:
+              path: /
+              port: 80
             initialDelaySeconds: 10
             periodSeconds: 10
           resources:
-            {- toYaml .Values.resources | nindent 12 }
+            {{- toYaml .Values.resources | nindent 12 }}
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
