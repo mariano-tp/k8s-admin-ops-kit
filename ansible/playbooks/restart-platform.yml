@@ -3,6 +3,9 @@
   hosts: localhost
   gather_facts: false
   vars:
+    # Fuerza a usar el mismo Python con el que corre ansible-playbook (donde está instalada la lib kubernetes)
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+
     ns: "{{ ns | default('bot') }}"
     restart_order:
       - api
