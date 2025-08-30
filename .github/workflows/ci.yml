@@ -82,9 +82,19 @@ jobs:
           pip install ansible kubernetes
           ansible-galaxy collection install kubernetes.core
 
+      # >>> NUEVO PASO: Exportamos kubeconfig a un archivo explícito
+      - name: Export kubeconfig for Ansible
+        run: |
+          set -euo pipefail
+          kind get kubeconfig > "$RUNNER_TEMP/kubeconfig"
+          echo "Kubeconfig written to: $RUNNER_TEMP/kubeconfig"
+          # sanity
+          KUBECONFIG="$RUNNER_TEMP/kubeconfig" kubectl get ns
+
       - name: Test Ansible playbook (dry-run)
         env:
-          K8S_AUTH_KUBECONFIG: ${{ env.HOME }}/.kube/config
+          # Ansible toma kubeconfig desde esta variable
+          K8S_AUTH_KUBECONFIG: ${{ runner.temp }}/kubeconfig
         run: |
           set -euo pipefail
           ansible-playbook -i ansible/inventory/hosts.ini \
