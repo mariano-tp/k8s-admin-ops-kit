@@ -3,19 +3,23 @@
   hosts: localhost
   gather_facts: false
   vars:
-    namespace: "{{ namespace | default('bot') }}"
-    order: [api, worker, nlp]
+    ns: "{{ ns | default('bot') }}"
+    restart_order:
+      - api
+      - worker
+      - nlp
+
   tasks:
     - name: Ensure namespace exists
       kubernetes.core.k8s_info:
         api_version: v1
         kind: Namespace
-        name: "{{ namespace }}"
+        name: "{{ ns }}"
 
-    - name: Rollout restart each component sequentially
+    - name: Trigger restart (annotate) sequentially
       vars:
         deploy_name: "bot-platform-{{ item }}"
-      loop: "{{ order }}"
+      loop: "{{ restart_order }}"
       kubernetes.core.k8s:
         state: present
         definition:
@@ -23,7 +27,7 @@
           kind: Deployment
           metadata:
             name: "{{ deploy_name }}"
-            namespace: "{{ namespace }}"
+            namespace: "{{ ns }}"
           spec:
             template:
               metadata:
@@ -34,13 +38,15 @@
     - name: Wait Ready after each restart
       vars:
         deploy_name: "bot-platform-{{ item }}"
-      loop: "{{ order }}"
+      loop: "{{ restart_order }}"
       retries: 60
       delay: 5
-      until: "(result.resources[0].status.availableReplicas | default(0)) >= (result.resources[0].spec.replicas | default(1))"
+      until: >
+        (result.resources[0].status.availableReplicas | default(0))
+        >= (result.resources[0].spec.replicas | default(1))
       kubernetes.core.k8s_info:
         api_version: apps/v1
         kind: Deployment
         name: "{{ deploy_name }}"
-        namespace: "{{ namespace }}"
+        namespace: "{{ ns }}"
       register: result
