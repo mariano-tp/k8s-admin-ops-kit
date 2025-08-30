@@ -3,14 +3,18 @@
   hosts: localhost
   gather_facts: false
   vars:
-    # Fuerza a usar el mismo Python con el que corre ansible-playbook (donde está instalada la lib kubernetes)
+    # usar el mismo Python donde instalamos dependencias en el job
     ansible_python_interpreter: "{{ ansible_playbook_python }}"
 
+    # variables no reservadas
     ns: "{{ ns | default('bot') }}"
     restart_order:
       - api
       - worker
       - nlp
+
+    # timestamp ISO8601 sin depender de gather_facts
+    restart_ts: "{{ lookup('pipe','date -u +%Y-%m-%dT%H:%M:%SZ') }}"
 
   tasks:
     - name: Ensure namespace exists
@@ -35,8 +39,8 @@
             template:
               metadata:
                 annotations:
-                  kubernetes.io/change-cause: "ansible-restart {{ ansible_date_time.iso8601 }}"
-                  kubectl.kubernetes.io/restartedAt: "{{ ansible_date_time.iso8601 }}"
+                  kubernetes.io/change-cause: "ansible-restart {{ restart_ts }}"
+                  kubectl.kubernetes.io/restartedAt: "{{ restart_ts }}"
 
     - name: Wait Ready after each restart
       vars:
