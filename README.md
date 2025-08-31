@@ -45,5 +45,8 @@ Cada push/PR dispara el workflow que:
 3. `ansible-playbook --check` de `restart-platform.yml`.
 4. Espera readiness y ejecuta `scripts/smoke.sh`.
 
----
-**Licencia:** MIT
+```
+## Créditos
+Repositorio de portfolio por @mariano-tp. Licencia MIT.
+
+Ver también: [Código de Conducta](./CODE_OF_CONDUCT.md) · [Contribuir](./CONTRIBUTING.md) · [Seguridad](./SECURITY.md)
