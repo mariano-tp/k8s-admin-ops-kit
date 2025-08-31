@@ -34,7 +34,3 @@ Los PRs deben quedar en verde ✅:
 
 ## Licencia
 Al contribuir aceptás que tu aporte se publica bajo **MIT** (ver [LICENSE](./LICENSE)).
-
-
-## Licencia
-Al contribuir aceptás que tu aporte se publica bajo **MIT** (ver [LICENSE](./LICENSE)).
