@@ -1,4 +1,11 @@
-# k8s-admin-ops-kit
+[![ci](https://img.shields.io/github/actions/workflow/status/mariano-tp/k8s-admin-ops-kit/ci.yml?branch=main&label=ci&style=flat-square)](https://github.com/mariano-tp/k8s-admin-ops-kit/actions/workflows/ci.yml)
+[![last commit](https://img.shields.io/github/last-commit/mariano-tp/k8s-admin-ops-kit?style=flat-square)](https://github.com/mariano-tp/k8s-admin-ops-kit/commits/main)
+[![release](https://img.shields.io/github/v/release/mariano-tp/k8s-admin-ops-kit?display_name=tag&style=flat-square)](https://github.com/mariano-tp/k8s-admin-ops-kit/releases)
+[![license: MIT](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
+[![stars](https://img.shields.io/github/stars/mariano-tp/k8s-admin-ops-kit?style=flat-square)](https://github.com/mariano-tp/k8s-admin-ops-kit/stargazers)
+
+
+# Kubernetes Admin Ops Kit
 
 > Runbooks-as-code para tareas típicas de un **Administrador de Kubernetes**. Incluye **Ansible** para operaciones L2/L3,
 **Helm** para empaquetar una app de ejemplo y **CI** con KinD. Ideal para entrevistas: muestra automatización,
@@ -36,7 +43,45 @@ ansible-playbook ansible/playbooks/restart-platform.yml -e namespace=bot
 
 # 5) Smoke test
 ./scripts/smoke.sh
+
 ```
+
+## Estructura
+```
+k8s-admin-ops-kit/
+├─ ansible/
+│ ├─ inventory/hosts.ini
+│ ├─ collections/requirements.yml
+│ └─ playbooks/
+│ ├─ restart-platform.yml
+│ ├─ cordon-drain-node.yml
+│ ├─ rollout-undo.yml
+│ └─ rotate-secret.yml
+├─ helm/
+│ └─ bot-platform/
+│ ├─ Chart.yaml
+│ ├─ values.yaml
+│ └─ templates/
+│ ├─ deploy-api.yaml
+│ ├─ deploy-worker.yaml
+│ ├─ deploy-nlp.yaml
+│ ├─ svc-api.yaml
+│ └─ netpol.yaml
+├─ scripts/
+│ ├─ kind-up.sh
+│ ├─ kind-down.sh
+│ └─ smoke.sh
+├─ runbooks/
+│ ├─ 01-restart-plataforma.md
+│ └─ 02-mantenimiento-nodo.md
+├─ observability/kube-prometheus-stack-values.yaml
+├─ .github/workflows/ci.yml
+├─ requirements.txt
+├─ LICENSE
+└─ README.md
+
+```
+
 
 ## CI
 Cada push/PR dispara el workflow que:
@@ -45,7 +90,7 @@ Cada push/PR dispara el workflow que:
 3. `ansible-playbook --check` de `restart-platform.yml`.
 4. Espera readiness y ejecuta `scripts/smoke.sh`.
 
-```
+
 ## Créditos
 Repositorio de portfolio por @mariano-tp. Licencia MIT.
 
