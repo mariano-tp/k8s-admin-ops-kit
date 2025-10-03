@@ -7,34 +7,34 @@
 
 # Kubernetes Admin Ops Kit
 
-> Runbooks-as-code para tareas típicas de un **Administrador de Kubernetes**. Incluye **Ansible** para operaciones L2/L3,
-**Helm** para empaquetar una app de ejemplo y **CI** con KinD. Ideal para entrevistas: muestra automatización,
-despliegues controlados y checks de salud.
+> Runbooks-as-code for typical **Kubernetes administrator** tasks. Includes **Ansible** for L2/L3 operations,
+**Helm** for packaging a sample app, and **CI** with KinD. Ideal for interviews: showcases automation,
+controlled rollouts, and health checks.
 
-## Contenido
-- `helm/bot-platform/`: chart Helm con 3 Deployments (api/worker/nlp), PDB, NetworkPolicy y probes.
-- `ansible/playbooks/`: playbooks de operaciones (reinicio ordenado, cordon/drain, rollback, rotación de secretos).
-- `scripts/`: scripts para levantar un clúster **KinD** y hacer smoke tests.
-- `.github/workflows/ci.yml`: CI que crea KinD, lint de Helm, instala el chart, ejecuta Ansible y smoke test.
-- `observability/`: valores base para kube-prometheus-stack (opcional).
-- `runbooks/`: SOPs breves de las operaciones.
+## Contents
+- `helm/bot-platform/`: Helm chart with 3 Deployments (api/worker/nlp), PDB, NetworkPolicy, and probes.
+- `ansible/playbooks/`: operation playbooks (ordered restart, cordon/drain, rollback, secret rotation).
+- `scripts/`: scripts to spin up a **KinD** cluster and run smoke tests.
+- `.github/workflows/ci.yml`: CI that creates KinD, runs Helm lint, installs the chart, executes Ansible, and runs smoke tests.
+- `observability/`: base values for kube-prometheus-stack (optional).
+- `runbooks/`: short SOPs for operations.
 
->  Requisitos locales (opcional): Docker + KinD + kubectl + Helm + Python 3.11.
+> Local requirements (optional): Docker + KinD + kubectl + Helm + Python 3.11.
 
-En CI (GitHub Actions) no se requiere configurar nada: el workflow crea todo y valida.
+In CI (GitHub Actions) no setup is required: the workflow provisions everything and validates.
 
-## Uso rápido (local, Linux/macOS)
+## Quick start (local, Linux/macOS)
 ```bash
-# 1) Levantar KinD
+# 1) Spin up KinD
 ./scripts/kind-up.sh
 
-# 2) Instalar el chart (namespace bot)
+# 2) Install the chart (namespace bot)
 helm upgrade --install bot-platform ./helm/bot-platform -n bot --create-namespace
 
-# 3) Esperar readiness
+# 3) Wait for readiness
 kubectl -n bot rollout status deploy -l app.kubernetes.io/name=bot-platform --timeout=300s
 
-# 4) Ejecutar reinicio ordenado con Ansible
+# 4) Execute ordered restart with Ansible
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ansible-galaxy collection install -r ansible/collections/requirements.yml
@@ -43,55 +43,51 @@ ansible-playbook ansible/playbooks/restart-platform.yml -e namespace=bot
 
 # 5) Smoke test
 ./scripts/smoke.sh
-
 ```
 
-## Estructura
+## Structure
 ```
 k8s-admin-ops-kit/
 ├─ ansible/
 │ ├─ inventory/hosts.ini
 │ ├─ collections/requirements.yml
 │ └─ playbooks/
-│ ├─ restart-platform.yml
-│ ├─ cordon-drain-node.yml
-│ ├─ rollout-undo.yml
-│ └─ rotate-secret.yml
+│   ├─ restart-platform.yml
+│   ├─ cordon-drain-node.yml
+│   ├─ rollout-undo.yml
+│   └─ rotate-secret.yml
 ├─ helm/
 │ └─ bot-platform/
-│ ├─ Chart.yaml
-│ ├─ values.yaml
-│ └─ templates/
-│ ├─ deploy-api.yaml
-│ ├─ deploy-worker.yaml
-│ ├─ deploy-nlp.yaml
-│ ├─ svc-api.yaml
-│ └─ netpol.yaml
+│   ├─ Chart.yaml
+│   ├─ values.yaml
+│   └─ templates/
+│       ├─ deploy-api.yaml
+│       ├─ deploy-worker.yaml
+│       ├─ deploy-nlp.yaml
+│       ├─ svc-api.yaml
+│       └─ netpol.yaml
 ├─ scripts/
 │ ├─ kind-up.sh
 │ ├─ kind-down.sh
 │ └─ smoke.sh
 ├─ runbooks/
-│ ├─ 01-restart-plataforma.md
-│ └─ 02-mantenimiento-nodo.md
+│ ├─ 01-restart-platform.md
+│ └─ 02-node-maintenance.md
 ├─ observability/kube-prometheus-stack-values.yaml
 ├─ .github/workflows/ci.yml
 ├─ requirements.txt
 ├─ LICENSE
 └─ README.md
-
 ```
 
-
 ## CI
-Cada push/PR dispara el workflow que:
-1. Crea KinD en Ubuntu runner.
-2. `helm lint` y despliegue del chart.
-3. `ansible-playbook --check` de `restart-platform.yml`.
-4. Espera readiness y ejecuta `scripts/smoke.sh`.
+Each push/PR triggers the workflow that:
+1. Creates KinD on an Ubuntu runner.
+2. Runs `helm lint` and deploys the chart.
+3. Executes `ansible-playbook --check` on `restart-platform.yml`.
+4. Waits for readiness and runs `scripts/smoke.sh`.
 
+## Credits
+Portfolio repository by @mariano-tp. Licensed under MIT.
 
-## Créditos
-Repositorio de portfolio por @mariano-tp. Licencia MIT.
-
-Ver también: [Código de Conducta](./CODE_OF_CONDUCT.md) · [Contribuir](./CONTRIBUTING.md) · [Seguridad](./SECURITY.md)
+See also: [Code of Conduct](./CODE_OF_CONDUCT.md) · [Contributing](./CONTRIBUTING.md) · [Security](./SECURITY.md)
