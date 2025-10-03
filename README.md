@@ -19,7 +19,7 @@ despliegues controlados y checks de salud.
 - `observability/`: valores base para kube-prometheus-stack (opcional).
 - `runbooks/`: SOPs breves de las operaciones.
 
-> ⚠️ Requisitos locales (opcional): Docker + KinD + kubectl + Helm + Python 3.11.
+>  Requisitos locales (opcional): Docker + KinD + kubectl + Helm + Python 3.11.
 
 En CI (GitHub Actions) no se requiere configurar nada: el workflow crea todo y valida.
 
