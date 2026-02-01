@@ -1,12 +1,12 @@
 > Available languages / Idiomas disponibles: [*English*](README.md) / [*Español*](README.ES.md)
 
-Volver al repositorio: [Home](https://github.com/mariano-tp/mariano-tp/blob/main/README.ES.md)
+Volver al repositorio: [Home](https://github.com/metorresponce/metorresponce/blob/main/README.ES.md)
 
-[![ci](https://img.shields.io/github/actions/workflow/status/mariano-tp/k8s-admin-ops-kit/ci.yml?branch=main&label=ci&style=flat-square)](https://github.com/mariano-tp/k8s-admin-ops-kit/actions/workflows/ci.yml)
-[![last commit](https://img.shields.io/github/last-commit/mariano-tp/k8s-admin-ops-kit?style=flat-square)](https://github.com/mariano-tp/k8s-admin-ops-kit/commits/main)
-[![release](https://img.shields.io/github/v/release/mariano-tp/k8s-admin-ops-kit?display_name=tag&style=flat-square)](https://github.com/mariano-tp/k8s-admin-ops-kit/releases)
+[![ci](https://img.shields.io/github/actions/workflow/status/metorresponce/k8s-admin-ops-kit/ci.yml?branch=main&label=ci&style=flat-square)](https://github.com/metorresponce/k8s-admin-ops-kit/actions/workflows/ci.yml)
+[![last commit](https://img.shields.io/github/last-commit/metorresponce/k8s-admin-ops-kit?style=flat-square)](https://github.com/metorresponce/k8s-admin-ops-kit/commits/main)
+[![release](https://img.shields.io/github/v/release/metorresponce/k8s-admin-ops-kit?display_name=tag&style=flat-square)](https://github.com/metorresponce/k8s-admin-ops-kit/releases)
 [![license: MIT](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
-[![stars](https://img.shields.io/github/stars/mariano-tp/k8s-admin-ops-kit?style=flat-square)](https://github.com/mariano-tp/k8s-admin-ops-kit/stargazers)
+[![stars](https://img.shields.io/github/stars/metorresponce/k8s-admin-ops-kit?style=flat-square)](https://github.com/metorresponce/k8s-admin-ops-kit/stargazers)
 
 # Kubernetes Admin Ops Kit
 
@@ -96,6 +96,6 @@ Cada push/PR dispara el workflow que:
 4. Espera readiness y corre scripts/smoke.sh
 
 ## Créditos
-Repositorio de portfolio por @mariano-tp. Licencia MIT.
+Repositorio de portfolio por @metorresponce. Licencia MIT.
 
 Ver también: [Code of Conduct](./CODE_OF_CONDUCT.md) · [Contributing](./CONTRIBUTING.md) · [Security](./SECURITY.md)
