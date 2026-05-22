@@ -10,93 +10,175 @@ Back to repository: [Home](https://github.com/metorresponce/metorresponce/blob/m
 
 # Kubernetes Admin Ops Kit
 
-Runbooks-as-code for typical Kubernetes administrator tasks. Includes Ansible for L2/L3 operations, Helm for packaging a sample app, and CI with KinD.
+Runbooks-as-code for common Kubernetes administration tasks, focused on controlled operations, reproducible validation, and safer operational practices.
 
-Designed for technical interviews: showcases automation, controlled rollouts, health checks, and reproducible validation fully in GitHub Actions.
+This repository includes Ansible playbooks for L2/L3 operational tasks, a Helm-packaged sample platform, Kubernetes operational controls, and CI validation using an ephemeral KinD cluster in GitHub Actions.
 
-## What gets validated in CI (GitHub Actions)
-The workflow provisions everything in an ephemeral KinD cluster and validates the full flow:
+The goal is to demonstrate how operational automation, health checks, rollout control, and infrastructure validation can support reliability, incident readiness, and technology risk reduction in Kubernetes environments.
+
+## Why this repository exists
+
+Kubernetes operations often involve repetitive tasks that can become risky when executed manually, inconsistently, or without validation.
+
+This lab shows how common administrative actions can be documented, automated, tested, and reviewed as code. It is not a production system, but a reproducible technical demonstration of practices that can be adapted to real environments.
+
+## Risk and operational value
+
+This repository focuses on:
+
+- Reducing manual operational errors through repeatable playbooks
+- Validating Kubernetes changes before relying on them
+- Supporting controlled rollouts and rollback procedures
+- Documenting operational actions as reviewable runbooks
+- Testing readiness, health checks, and basic service continuity
+- Demonstrating how CI can be used to validate infrastructure behavior
+- Connecting technical operations with risk reduction and incident readiness
+
+## What gets validated in CI
+
+The GitHub Actions workflow provisions an ephemeral KinD cluster and validates the full operational flow:
 
 - Creates a KinD cluster on an Ubuntu runner
-- Runs Helm chart validation (lint + template)
-- Installs the chart and checks rollouts/readiness
-- Executes Ansible playbooks (smoke + basic operational tasks)
-- Runs a smoke test to confirm the platform is healthy
+- Runs Helm chart validation with lint and template
+- Installs the sample platform into Kubernetes
+- Checks deployment rollout and readiness
+- Executes Ansible playbooks for basic operational tasks
+- Runs a smoke test to confirm that the platform is healthy
 
-Evidence: workflow logs in Actions.
+Evidence is available in the workflow logs under GitHub Actions.
+
+## Technical scope
+
+The repository includes:
+
+- A Helm chart with three sample workloads: api, worker, and nlp
+- Kubernetes probes for health and readiness validation
+- PodDisruptionBudget for basic availability control
+- NetworkPolicy for basic traffic restriction
+- Ansible playbooks for operational procedures
+- KinD-based validation for local or CI execution
+- Short runbooks for operational documentation
+- Optional observability values for kube-prometheus-stack
 
 ## Contents
-- helm/bot-platform/ - Helm chart with 3 Deployments (api/worker/nlp), PDB, NetworkPolicy, and probes
-- ansible/playbooks/ - Operational playbooks (ordered restart, cordon/drain, rollback, secret rotation)
-- scripts/ - Scripts to spin up KinD and run smoke tests
-- .github/workflows/ci.yml - CI that creates KinD, validates Helm, installs the chart, runs Ansible, and executes smoke tests
-- observability/ - Base values for kube-prometheus-stack (optional)
-- runbooks/ - Short SOPs for operations
 
-## Validate 100% online (GitHub Actions)
-1. Push this repo to GitHub
-2. Go to Actions -> ci -> Run workflow
-3. The workflow should turn green
+- `helm/bot-platform/` - Helm chart with Deployments, Services, probes, PDB, and NetworkPolicy
+- `ansible/playbooks/` - Operational playbooks for restart, cordon/drain, rollback, and secret rotation
+- `scripts/` - Scripts to create a KinD cluster and run smoke tests
+- `.github/workflows/ci.yml` - CI workflow that validates the complete flow
+- `observability/` - Base values for kube-prometheus-stack
+- `runbooks/` - Short SOPs for operational tasks
 
-## Quick start (local optional)
-Local setup is optional. It can be useful for development and troubleshooting.
+## Validate online with GitHub Actions
 
-    ./scripts/kind-up.sh
+1. Push this repository to GitHub
+2. Go to `Actions`
+3. Select `ci`
+4. Run the workflow
+5. Review the workflow logs and validation results
 
-    helm upgrade --install bot-platform ./helm/bot-platform -n bot --create-namespace
+The workflow should complete successfully and provide evidence of the validated operations.
 
-    kubectl -n bot rollout status deploy -l app.kubernetes.io/name=bot-platform --timeout=300s
+## Quick start
 
-    python3 -m venv .venv && source .venv/bin/activate
-    pip install -r requirements.txt
-    ansible-galaxy collection install -r ansible/collections/requirements.yml
-    export K8S_AUTH_KUBECONFIG=$HOME/.kube/config
-    ansible-playbook ansible/playbooks/restart-platform.yml -e namespace=bot
+Local setup is optional. It can be useful for development, troubleshooting, or reviewing the workflow manually.
 
-    ./scripts/smoke.sh
+```bash
+./scripts/kind-up.sh
+```
+
+```bash
+helm upgrade --install bot-platform ./helm/bot-platform -n bot --create-namespace
+```
+
+```bash
+kubectl -n bot rollout status deploy -l app.kubernetes.io/name=bot-platform --timeout=300s
+```
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+ansible-galaxy collection install -r ansible/collections/requirements.yml
+export K8S_AUTH_KUBECONFIG=$HOME/.kube/config
+ansible-playbook ansible/playbooks/restart-platform.yml -e namespace=bot
+```
+
+```bash
+./scripts/smoke.sh
+```
 
 ## Structure
-    k8s-admin-ops-kit/
-    ├─ ansible/
-    │ ├─ inventory/hosts.ini
-    │ ├─ collections/requirements.yml
-    │ └─ playbooks/
-    │   ├─ restart-platform.yml
-    │   ├─ cordon-drain-node.yml
-    │   ├─ rollout-undo.yml
-    │   └─ rotate-secret.yml
-    ├─ helm/
-    │ └─ bot-platform/
-    │   ├─ Chart.yaml
-    │   ├─ values.yaml
-    │   └─ templates/
-    │       ├─ deploy-api.yaml
-    │       ├─ deploy-worker.yaml
-    │       ├─ deploy-nlp.yaml
-    │       ├─ svc-api.yaml
-    │       └─ netpol.yaml
-    ├─ scripts/
-    │ ├─ kind-up.sh
-    │ ├─ kind-down.sh
-    │ └─ smoke.sh
-    ├─ runbooks/
-    │ ├─ 01-restart-platform.md
-    │ └─ 02-node-maintenance.md
-    ├─ observability/kube-prometheus-stack-values.yaml
-    ├─ .github/workflows/ci.yml
-    ├─ requirements.txt
-    ├─ LICENSE
-    └─ README.md
+
+```text
+k8s-admin-ops-kit/
+├─ ansible/
+│  ├─ inventory/hosts.ini
+│  ├─ collections/requirements.yml
+│  └─ playbooks/
+│     ├─ restart-platform.yml
+│     ├─ cordon-drain-node.yml
+│     ├─ rollout-undo.yml
+│     └─ rotate-secret.yml
+├─ helm/
+│  └─ bot-platform/
+│     ├─ Chart.yaml
+│     ├─ values.yaml
+│     └─ templates/
+│        ├─ deploy-api.yaml
+│        ├─ deploy-worker.yaml
+│        ├─ deploy-nlp.yaml
+│        ├─ svc-api.yaml
+│        └─ netpol.yaml
+├─ scripts/
+│  ├─ kind-up.sh
+│  ├─ kind-down.sh
+│  └─ smoke.sh
+├─ runbooks/
+│  ├─ 01-restart-platform.md
+│  └─ 02-node-maintenance.md
+├─ observability/kube-prometheus-stack-values.yaml
+├─ .github/workflows/ci.yml
+├─ requirements.txt
+├─ LICENSE
+└─ README.md
+```
 
 ## CI workflow summary
-Each push/PR triggers the workflow that:
-1. Creates KinD on an Ubuntu runner
-2. Runs Helm validation and installs the chart
-3. Executes Ansible automation (basic operational tasks)
-4. Waits for readiness and runs scripts/smoke.sh
+
+Each push or pull request triggers a workflow that:
+
+1. Creates a KinD cluster on an Ubuntu runner
+2. Runs Helm validation
+3. Installs the sample platform
+4. Executes Ansible automation
+5. Waits for readiness
+6. Runs `scripts/smoke.sh`
+7. Reports the result in GitHub Actions
+
+## Security and limitations
+
+This repository is a public technical demonstration. It does not contain client data, production credentials, corporate infrastructure details, or confidential operational procedures.
+
+The sample workloads are intentionally simple. Their purpose is to support validation of Kubernetes operational patterns, not to represent a complete production application.
+
+No real secrets are included. Any required credentials or tokens should be provided through local environment variables or configuration files excluded from version control.
+
+## Possible extensions
+
+This lab can be extended with:
+
+- Additional runbooks for incident response scenarios
+- Prometheus rules for operational alerts
+- Grafana dashboards for workload visibility
+- More advanced NetworkPolicy examples
+- Admission control validation
+- Backup and recovery procedures
+- Policy-as-code checks
+- Security scanning in CI
 
 ## Credits
-Portfolio repository by @metorresponce. Licensed under MIT.
+
+Portfolio repository by [@metorresponce](https://github.com/metorresponce). Licensed under MIT.
 
 See also: [Code of Conduct](./CODE_OF_CONDUCT.md) · [Contributing](./CONTRIBUTING.md) · [Security](./SECURITY.md)
-
